@@ -1,0 +1,118 @@
+---
+title: "Walmart Sales Analysis"
+output: html_notebook
+author: Brandon Ly
+---
+*******
+Data Collected From: https://www.kaggle.com/rutuspatel/walmart-dataset-retail?select=Walmart_Store_sales.csv  
+Linkedin: https://www.linkedin.com/in/brandon-ly-1676b821a/  
+GitHub: https://github.com/BrandonSchoolPF/WalmartSalesAnalysis  
+
+$$\\[.01in]$$
+<font size = "5" >**Introduction**</font>
+
+*******
+
+The data we have shows the sales for different stores, with sales figures based on if the day contained a holiday, temperature of day, fuel price, customer price index, and unemployment rate.  
+
+The variables within the data set are significant in that we can make an assumption that they affect weekly sales, for example we there is a possibility that a fuel price can cause a decrease in weekly sales in that customers may see an increase in price for gas thus swaying them to use their cars more efficiently or not at all.  
+
+Using the data set we can use a statistical approach to figure out if whether or not those variables may play a significance in how it affects weekly sales.  
+
+
+Below we can observe the first 6 rows of the data.
+
+```{r}
+data <- read.csv("Walmart_Store_sales.csv")
+head(data)
+```
+  
+What we want to analyze is if gas prices, unemployment and temperature of the day caused any form of significance in how the week of sales preformed.  
+
+From what the data is given we can use ANOVA to statistically show if whether the observations we observed showed a significance in sales.  
+
+
+$$\\[.01in]$$
+
+*******  
+  
+
+<font size = "5" >**Cleaning the Data**</font>  
+
+In order to identify what we are testing, we must clean the data set to show only the values we want to see.  
+
+The columns we need are:
+
+* Weekly Sales
+* Temperature
+* Fuel Price
+* Unemployment  
+
+Using dplyr I can select the columns that are of importance uding the select() function.  
+
+
+Below I will use dplyr to show only the data we need:
+```{r}
+library(dplyr)
+data <- data %>%
+        select(Weekly_Sales, Temperature, Fuel_Price, Unemployment)
+head(data)
+```
+As shown, the columns represent which variables are of importance. I have excluded date and store number because we are only trying to see how our observations played a significance to our sales, not when the sales were being effected.  
+
+By clearing some of the data we can eliminate any redundancies as well as any data that we deem as insignificant to what we are trying to solve.  
+
+
+
+******  
+
+
+<font size = "5" >**Data Analysis**</font>  
+
+In order to show significance, we must use an ANOVA test to determine our F value and P Value. We would use an ANOVA to test because our data contains more than 2 groups that we are comparing to our output variable. With an ANOVA test we can show the variance of our means for both the outcome variable and groups.  
+
+First, I would like to graph the columns using ggplot, and show a line of regression to predict trends to see if there was a negative or positive outcome on if the levels of the variables affect weekly sales.  
+
+```{r}
+temp_graph <- ggplot(data, aes(x = Weekly_Sales, y = Temperature)) + geom_point() + geom_smooth(method='lm', formula= y~x)
+temp_graph
+```
+```{r}
+fuel_graph <- ggplot(data, aes(x = Weekly_Sales, y = Fuel_Price)) + geom_point() + geom_smooth(method='lm', formula= y~x)
+fuel_graph
+```
+```{r}
+Unemployment_graph <- ggplot(data, aes(x = Weekly_Sales, y = Unemployment)) + geom_point() + geom_smooth(method='lm', formula= y~x)
+Unemployment_graph
+```
+Using GGPlot2 I created code that allowed us to graph out each column and provide a line using a linear model equation from our x and y-axis.  
+
+What we see from our graph is that Temperature and Unemployment had a negative slope from the line of regression while fuel price had a negative slope. We could form a prediction that temperature and unemployment played a significance in that the higher the temperature and unemployment rate, the lower the weekly sale. However we cannot base these prediction to form a result from an analysis, so we will move forward to an ANOVA test.  
+
+
+R allows us to use an ANOVA test with the aov() function:  
+
+```{r}
+data_aov <- aov(Weekly_Sales ~ Temperature + Fuel_Price + Unemployment, data = data)
+data_aov
+summary(data_aov)
+```
+
+
+******
+
+<font size = "5" >**Conclusions**</font>   
+
+Alike a T-test we can show significance of two variables by finding the P-Value and comparing it to our significance level. However, ANOVA allows us to find the same information from a T-Test but instead of having a one-way comparison, ANOVA allows us to provide a comparison from 2 or more dependent variables unlike a standard T-Test.  
+
+With our analysis, we want to identify the Null and Alternative Hypothesis. From there we can determine alongside our values from the test on whether or not to reject or accepts our null hypothesis.  
+
+* H~0~: Temperature, Fuel Prices, and Unemployment Rate causes no change to the weekly sales 
+* H~a~: Temperature, Fuel Prices, and Unemployment Rate causes change to the weekly sales 
+
+
+As we can see from the results, Temperature and Unemployment had a very small P-Value but a large F- Value, This means that Temperature and Unemployment played a large significance in our ANOVA test in that the means of Temperature and Unemployment had a high variance. However, since the P-Values are lower than the significance level, we can reject the null hypothesis and agree with the Alternative hypothesis.  
+
+In conclusion with our analysis, we can make an assumption that Unemployment Rates and Temperature of day had some impact in the weekly sales. Whilst Fuel Price had little variance in mean and no significance in Weekly Sales. We saw this in the beginning of our analysis when using a graph for our data and showing our lines of regression to predict a trend, we saw that temperature and unemployment saw a negative slope in our line of regression, meaning that those played a siginificant role in correlation for the weekly sales. 
+
+
